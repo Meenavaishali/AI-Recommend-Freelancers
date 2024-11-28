@@ -87,7 +87,7 @@ AI-Freelancer-Recommendations/
 
 1. Clone the repository:~
 
-   `git clone https://github.com/your-username/AI-Freelancer-Recommendations.git`
+   `git clone https://github.com/your-username/AI-Recommend-Freelancers.git`
    `cd AI-Freelancer-Recommendations`
 
 
