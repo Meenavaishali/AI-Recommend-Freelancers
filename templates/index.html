@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Freelancer Search</title>
+  <style>
+    /* General styles */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f9f9f9;
+    }
+
+    .header {
+      background-color: #7459e3;
+      color: white;
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header input {
+      padding: 5px;
+      font-size: 14px;
+      width: 200px;
+      border: none;
+      border-radius: 5px;
+      margin-right: 10px;
+    }
+
+    .header button {
+      padding: 5px 10px;
+      background-color: white;
+      color: #7459e3;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .container {
+      display: flex;
+      margin: 20px;
+    }
+
+    .filters,
+    .content {
+      padding: 10px;
+    }
+
+    .filters {
+      width: 14%;
+      background-color: white;
+      box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
+      margin-right: 10px;
+    }
+
+    .filters h3 {
+      color: #7459e3;
+    }
+
+    .filters label {
+      font-weight: bold;
+      margin-bottom: 5px;
+      display: block;
+    }
+
+    .filters input {
+      width: calc(100% - 10px);
+      margin-bottom: 10px;
+      padding: 5px;
+    }
+
+    .content {
+      width: 75%;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+    }
+
+    .freelancer-card {
+      background-color: white;
+      padding: 10px;
+      box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
+      border-radius: 5px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      max-width: 280px;
+    }
+
+    .freelancer-name {
+      color: #7459e3;
+      margin: 10px 0 5px;
+    }
+    .star {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      background-color: transparent;
+      clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+      background-color: #dcdcdc; /* Gray for empty star */
+    }
+
+    .star.full {
+      background-color: #ffb400; /* Yellow for full star */
+    }
+
+    .star.half {
+      background: linear-gradient(90deg, #ffb400 50%, #dcdcdc 50%); /* Half yellow */
+    }
+
+    .star.quarter {
+      background: linear-gradient(90deg, #ffb400 25%, #dcdcdc 25%); /* 25% yellow */
+    }
+
+    .star.three-quarters {
+      background: linear-gradient(90deg, #ffb400 75%, #dcdcdc 25%); /* 75% yellow */
+    }
+    .rating {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 16px;
+      color: #ffb400;
+    }
+
+    .no-results {
+      width: 100%;
+      text-align: center;
+      font-size: 18px;
+      color: #999;
+      margin-top: 50px;
+    }
+
+    .description {
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 10px;
+    }
+
+    .description:hover {
+      white-space: normal;
+      overflow: visible;
+      -webkit-line-clamp: unset;
+      text-overflow: unset;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="header">
+    <h1>Freelancer Search</h1>
+    <input type="text" style="width:40%; height: 30px;" id="search-bar" placeholder="Search...">
+    <button id="search-button">Search</button>
+    <button id="reset-filters">Reset</button>
+  </div>
+  <div class="container">
+    <div class="filters">
+      <h3>Filters</h3>
+      <label for="skills">Skills</label>
+      <input type="text" id="skills" placeholder="e.g., React, Node.js">
+
+      <label for="rate">Rating</label>
+      <input type="number" id="rating" placeholder="Rating">
+    </div>
+    <div class="content" id="freelancer-list">
+      <!-- Freelancer cards will be dynamically inserted here -->
+    </div>
+  </div>
+
+  <script>
+    // Define a global variable to store fetched freelancers
+    let allFreelancers = [];
+
+    // Function to render freelancers
+    function renderFreelancers(freelancersToRender) {
+      const freelancerList = document.getElementById("freelancer-list");
+      freelancerList.innerHTML = "";
+
+      if (freelancersToRender.length === 0) {
+        freelancerList.innerHTML = "<div class='no-results'>No results found</div>";
+        return;
+      }
+
+      freelancersToRender.forEach((freelancer) => {
+        const skillsArray = freelancer.skills.split('|'); // Split skills string into an array
+        const card = document.createElement("div");
+        card.className = "freelancer-card";
+        card.innerHTML = `
+          <h4 class="freelancer-name">${freelancer.name}</h4>
+          <p><strong>Title:</strong> ${freelancer.title}</p>
+          <p class="description" title="${freelancer.description}">${freelancer.description}</p>
+          <p><strong>Skills:</strong> ${skillsArray.join(", ")}</p>
+          <p><strong>Rate:</strong> $${freelancer.hourlyRate}/hr</p>
+          <p><strong>Total Hours Worked:</strong> ${freelancer.totalHours} Hours</p>
+          <p><strong>Total Jobs Completed:</strong> ${freelancer.totalJobs}</p>
+          <div class="rating">
+            ${getStars(freelancer.rating)}
+          </div>
+          <p><strong>Success Ratio:</strong> ${freelancer.sucessratio}</p>
+        `;
+        freelancerList.appendChild(card);
+      });
+    }
+
+    // Function to fetch freelancers
+    async function fetchFreelancers() {
+      try {
+        const response = await fetch('http://localhost:5000/api/freelancers');
+        if (!response.ok) {
+          throw new Error('Failed to fetch freelancers');
+        }
+        allFreelancers = await response.json(); // Store freelancers globally
+        renderFreelancers(allFreelancers);
+      } catch (error) {
+        console.error(error);
+        document.getElementById("freelancer-list").innerHTML = "<div class='no-results'>Error loading freelancers</div>";
+      }
+    }
+
+    // Function to fetch recommendations based on filters
+    async function fetchRecommendedFreelancers() {
+      try {
+        const keyword = document.getElementById("search-bar").value.toLowerCase();
+        const skillsFilter = document.getElementById("skills").value.toLowerCase();
+        const rating = parseFloat(document.getElementById("rating").value) || 0;
+        
+        const response = await fetch(`http://localhost:5000/api/recommend?skills=${encodeURIComponent(skillsFilter)}&keyword=${encodeURIComponent(keyword)}&rating=${rating}`, {
+          method: 'GET',
+        });
+        if (!response.ok) {
+          throw new Error('Failed to fetch recommended freelancers');
+        }
+        const recommendedFreelancers = await response.json();
+        renderFreelancers(recommendedFreelancers);
+      } catch (error) {
+        console.error(error);
+        document.getElementById("freelancer-list").innerHTML = "<div class='no-results'>Error loading recommended freelancers</div>";
+      }
+    }
+
+    // Function to filter and sort freelancers
+    function filterAndSortFreelancers() {
+      const keyword = document.getElementById("search-bar").value.toLowerCase();
+      const skillsFilter = document.getElementById("skills").value.toLowerCase();
+      const rating = parseFloat(document.getElementById("rating").value) || 0;
+     
+      if (keyword || skillsFilter || rating > 0) {
+        fetchRecommendedFreelancers();
+      } else {
+        renderFreelancers(allFreelancers);
+      }
+    }
+
+    // Function to get stars for rating
+    function getStars(rating) {
+      const stars = [];
+      const fullStars = Math.floor(rating);
+      const halfStars = Math.floor(rating % 1 * 2);
+      const emptyStars = 5 - fullStars - (halfStars > 0 ? 1 : 0);
+
+      // Add full stars
+      for (let i = 0; i < fullStars; i++) {
+        stars.push('<div class="star full"></div>');
+      }
+
+      // Add half star if necessary
+      if (halfStars === 1) {
+        stars.push('<div class="star half"></div>');
+      }
+
+      // Add empty stars
+      for (let i = 0; i < emptyStars; i++) {
+        stars.push('<div class="star"></div>');
+      }
+
+      return stars.join('');
+    }
+
+    // Reset filters
+    document.getElementById("reset-filters").addEventListener("click", () => {
+      document.getElementById("search-bar").value = '';
+      document.getElementById("skills").value = '';
+      document.getElementById("rating").value = '';
+      renderFreelancers(allFreelancers);
+    });
+
+    // Search button functionality
+    document.getElementById("search-button").addEventListener("click", filterAndSortFreelancers);
+
+    // Initial fetch
+    fetchFreelancers();
+  </script>
+</body>
+
+</html>

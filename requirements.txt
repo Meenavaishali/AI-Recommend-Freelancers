@@ -1,0 +1,11 @@
+Flask==3.0.3
+pymongo[srv]==4.5.0
+dnspython==2.3.0
+pydantic==1.10.8
+scikit-learn==1.3.1        # For TF-IDF and cosine similarity
+numpy==1.24.3              # Numerical operations
+pandas==2.1.0              # Data manipulation
+transformers==4.34.0       # For BERT embeddings
+torch==2.0.1               # PyTorch (required for transformers)
+sentence-transformers==2.2.2
+faiss-cpu==1.7.4
